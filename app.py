@@ -13,35 +13,36 @@ def index():
 
 @app.route('/l1')
 def get_l1_data():
-    order = random.randint(1500, 3000)
-    profit = random.randint(100000, 300000)
-    customer = random.randint(1000, order)
-    ATV = random.randint(80, 120)
+    order = 1854
+    profit = 348512
+    customer = 1231
+    ATV = 107
     return jsonify({"order": order, "profit": profit, "customer": customer, "ATV": ATV})
 
 
 @app.route('/l2')
 def get_l2_data():
     old_customer = [120030, 2020, 51, 2.2, 10.6]
-    new_customer = [29023, 576, 48, 1.3, 8.9]
+    new_customer = [110236, 2368, 48, 1.3, 8.9]
     return jsonify({"new_customer": new_customer, "old_customer": old_customer})
 
 
 @app.route('/l3')
 def get_l3_data():
-    index = ['20.12', '21.1', '21.2', '21.3', '21.4', '21.5', '21.6', '21.7', '21.8', '21.9', '21.10', '21.11']
-    old_customer = [random.randint(1500, 3000) for i in range(12)]
-    new_customer = [random.randint(200, 800) for i in range(12)]
+    data = pd.read_excel("static/data/2023年月销售额.xlsx")
+    index = data["年份"].dt.month.tolist()
+    old_customer = data["old_customer"].tolist()
+    new_customer = data["new_customer"].tolist()
     return jsonify({"index": index, "new_customer": new_customer, "old_customer": old_customer})
 
 
 @app.route('/c1')
 def get_c1_data():
     target = 3000000
-    sales = random.randint(1500000, 3000000)
+    sales = 2652340
     achieving_rate = str(int(round(sales / target * 100, 0))) + '%'
     year_target = 40000000
-    year_sales = random.randint(30000000, 36000000)
+    year_sales = 36043240
     year_achieving_rate = str(int(round(year_sales / year_target * 100, 0))) + '%'
     return jsonify({"sales": sales, "target": target, "achieving_rate": achieving_rate,
                     "year_sales": year_sales, "year_target": year_target, "year_achieving_rate": year_achieving_rate})
@@ -70,38 +71,30 @@ def get_map_data():
 
 @app.route('/r1')
 def get_r1_data():
-    index = ['20.12', '21.1', '21.2', '21.3', '21.4', '21.5', '21.6', '21.7', '21.8', '21.9', '21.10', '21.11']
-    sales = [random.randint(2000000, 3000000) for i in range(12)]
-    profit = [random.randint(400000, 800000) for i in range(12)]
+    data = pd.read_excel("static/data/2023年月销售额.xlsx")
+    index = data["年份"].dt.month.tolist()
+    sales = data["sales"].tolist()
+    profit = data["profit"].tolist()
     profit_rate = [round(i/j, 2) for i, j in zip(profit, sales)]
     return jsonify({"index": index, "sales": sales, "profit": profit, "profit_rate": profit_rate})
 
 
-def get_product():
-    product = [chr(i) for i in range(97, 123)]
-    sales = [random.randint(10, 300) for i in range(len(product)-2)]
-    profit = [random.randint(-2000, 10000) for i in range(len(product) - 2)]
-    product_type = ['AA', 'BB', 'CC']*int((len(product)-2)/3)
-    product_df = pd.DataFrame([product[:-2], product_type, sales, profit],
-                              index=['product', 'product_type', 'sales', 'profit']).T
-    return product_df
-
-
 @app.route('/r21')
 def get_r21_data():
-    product_df = get_product().sort_values('sales', ascending=False).head(10)
+    data = pd.read_excel("static/data/产品营业额.xlsx")
+    product_df = data.sort_values('sales', ascending=False).head(10)
     return jsonify({"product": product_df['product'].tolist(), "sales": product_df['sales'].tolist()[::-1]})
 
 
 @app.route('/r22')
 def get_r22_data():
-    product_df = get_product()
-    sales_avg = product_df.sales.mean()
-    profit_avg = product_df.profit.mean()
+    data = pd.read_excel("static/data/产品营业额.xlsx")
+    sales_avg = data.sales.mean()
+    profit_avg = data.profit.mean()
     product_type_value_list = []
     product_type_list = []
-    for i in product_df.product_type.unique():
-        product_type_value_list.append(product_df.query("product_type == @i")[['sales', 'profit']].values.tolist())
+    for i in data.product_type.unique():
+        product_type_value_list.append(data.query("product_type == @i")[['sales', 'profit']].values.tolist())
         product_type_list.append(i)
     return jsonify({"data": product_type_value_list, "type": product_type_list,
                        "sales_avg": sales_avg, "profit_avg": profit_avg})
@@ -109,14 +102,11 @@ def get_r22_data():
 
 @app.route('/r3')
 def get_r3_data():
-    sales = [random.randint(400000, 800000) for i in range(3)]
-    num = [random.randint(1000, 3000) for i in range(3)]
-    profit = [random.randint(80000, 160000) for i in range(3)]
-    df = pd.DataFrame([sales, num, profit], index=['sales', 'num', 'profit'], columns=['消费者', '公司', '小微企业']).T
+    df = pd.read_excel("static/data/销售额渠道.xlsx", index_col=0)
     df['sales'] = round(df['sales'] / df['sales'].sum(), 3)
     df['num'] = round(df['num'] / df['num'].sum(), 3)
     df['profit'] = round(df['profit'] / df['profit'].sum(), 3)
-    return jsonify({"data": df.values.tolist(),})
+    return jsonify({"data": df.values.tolist()})
 
 
 if __name__ == '__main__':
